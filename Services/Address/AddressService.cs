@@ -14,22 +14,19 @@ namespace SolicitatieOpdracht.Services.Address
     {
         private readonly IMapper _mapper;
         private readonly DataContext _context;
-        public AddressService(IMapper mapper, DataContext context)
-        {
-            _context = context;
+        public AddressService(IMapper mapper, DataContext context){
             _mapper = mapper;
+            _context = context;
         }
 
-        public async Task<ServiceResponse<List<GetAddressDto>>> GetAddresses()
-        {
+        public async Task<ServiceResponse<List<GetAddressDto>>> GetAddresses(){
             var response = new ServiceResponse<List<GetAddressDto>>();
             var addresses = await _context.addresses.ToListAsync();
             response.Data = addresses.Select(a => _mapper.Map<GetAddressDto>(a)).ToList();
             return response;
         }
 
-        public async Task<ServiceResponse<GetAddressDto>> GetAddress(int id)
-        {
+        public async Task<ServiceResponse<GetAddressDto>> GetAddress(int id){
             var response = new ServiceResponse<GetAddressDto>();
             var address = await _context.addresses.FirstOrDefaultAsync(a => a.Id == id);
             
@@ -43,8 +40,7 @@ namespace SolicitatieOpdracht.Services.Address
             return response;
         }
        
-        public async Task<ServiceResponse<GetAddressDto>> AddAddress(AddAddressDto address)
-        {
+        public async Task<ServiceResponse<GetAddressDto>> AddAddress(AddAddressDto address){
             var serviceResponse = new ServiceResponse<GetAddressDto>();
             
             if(IsValidAddress(address)){
@@ -62,8 +58,7 @@ namespace SolicitatieOpdracht.Services.Address
             return serviceResponse;
         }
 
-        private static bool IsValidAddress(AddAddressDto address)
-        {
+        private static bool IsValidAddress(AddAddressDto address){
             if (address.StreetName == "" || address.HouseNumber == 0 || address.PostalCode == "" || address.Place == "" || address.Country == "")
             {
                 return false;
@@ -71,8 +66,7 @@ namespace SolicitatieOpdracht.Services.Address
             return true;
         }
 
-        public async Task<ServiceResponse<GetAddressDto>> UpdateAddress(UpdateAddressDto updateAddress)
-        {
+        public async Task<ServiceResponse<GetAddressDto>> UpdateAddress(UpdateAddressDto updateAddress){
             var serviceResponse = new ServiceResponse<GetAddressDto>();
 
             if(IsValidAddress(_mapper.Map<AddAddressDto>(updateAddress))){
@@ -104,8 +98,7 @@ namespace SolicitatieOpdracht.Services.Address
             return serviceResponse;
         }
 
-        public async Task<ServiceResponse<List<GetAddressDto>>> DeleteAddress(int id)
-        {
+        public async Task<ServiceResponse<List<GetAddressDto>>> DeleteAddress(int id){
             var serviceResponse = new ServiceResponse<List<GetAddressDto>>();
 
             try{

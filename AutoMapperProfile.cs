@@ -15,7 +15,6 @@ namespace SolicitatieOpdracht
             CreateMap<Address, GetAddressDto>();
             CreateMap<AddAddressDto, Address>();
             CreateMap<UpdateAddressDto, AddAddressDto>();
-            
         }
     }
 }

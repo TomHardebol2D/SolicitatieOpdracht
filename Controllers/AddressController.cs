@@ -20,27 +20,27 @@ namespace SolicitatieOpdracht.Controllers
             this._addressService = addressService;
         }
 
-        [HttpGet("GetAll")]
-        public async Task<ActionResult<ServiceResponse<List<GetAddressDto>>>> GetAddress(){
+        [HttpGet("GetAllAddresses")]
+        public async Task<ActionResult<ServiceResponse<List<GetAddressDto>>>> GetAddresses(){
             return Ok(await _addressService.GetAddresses());
         }
 
-        [HttpGet("{id}GetSingle")]
+        [HttpGet("{id}GetSingleAddress")]
         public async Task<ActionResult<ServiceResponse<GetAddressDto>>> GetSingleAddress(int id){
             return Ok(await _addressService.GetAddress(id));
         }
 
-        [HttpPost("Add")]
+        [HttpPost("AddAddress")]
         public async Task<ActionResult<ServiceResponse<AddAddressDto>>> AddAddress(AddAddressDto address){
             return Ok(await _addressService.AddAddress(address));
         }
 
-        [HttpPut("Update")]
+        [HttpPut("UpdateAddress")]
         public async Task<ActionResult<ServiceResponse<AddAddressDto>>> UpdateAddress(UpdateAddressDto updateAddress){
             return Ok(await _addressService.UpdateAddress(updateAddress));
         }
         
-        [HttpDelete("Delete")]
+        [HttpDelete("{id}DeleteAddress")]
         public async Task<ActionResult<ServiceResponse<List<GetAddressDto>>>> DeleteAddress(int id){
             return Ok(await _addressService.DeleteAddress(id));
         }
