@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using SolicitatieOpdracht.Data;
 using SolicitatieOpdracht.Dtos;
 using SolicitatieOpdracht.Models;
+using System.Linq.Dynamic.Core;
+
 
 namespace SolicitatieOpdracht.Services.Address
 {
@@ -44,7 +46,7 @@ namespace SolicitatieOpdracht.Services.Address
         public async Task<ServiceResponse<GetAddressDto>> AddAddress(AddAddressDto address){
             var serviceResponse = new ServiceResponse<GetAddressDto>();
             
-            if(IsValidAddress(address)){
+            if(!IsValidAddress(address)){
                 serviceResponse.Success = false;
                 serviceResponse.Message = "Address not valid";
                 return serviceResponse;
@@ -151,6 +153,29 @@ namespace SolicitatieOpdracht.Services.Address
                 serviceResponse.Message = ex.Message;
             }
 
+            return serviceResponse;
+        }
+
+
+        public async Task<ServiceResponse<List<GetAddressDto>>> GetAddressesSorted(string sortType, bool ascending)
+        {
+            var serviceResponse = new ServiceResponse<List<GetAddressDto>>();
+
+            try{
+                var addresses = await _context.addresses.ToListAsync();
+                var sortedAddresses = addresses.OrderBy(p => p.GetType().GetProperty(sortType.ToLower(), BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)?.GetValue(p, null)).ToList();
+                
+                if  (sortedAddresses is null){
+                    throw new Exception("No address found could be because the sort type is not valid.");
+                }
+                
+                serviceResponse.Data = sortedAddresses.Select(a => _mapper.Map<GetAddressDto>(a)).ToList();                
+            }
+            catch (Exception ex){
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+            
             return serviceResponse;
         }
     }

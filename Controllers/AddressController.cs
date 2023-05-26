@@ -30,6 +30,11 @@ namespace SolicitatieOpdracht.Controllers
             return Ok(await _addressService.GetAddresses(searchOption));
         }
 
+        [HttpGet("{searchType}/{ascending}/GetAddressesSorted")]
+        public async Task<ActionResult<ServiceResponse<List<GetAddressDto>>>> GetAddressesSorted(string searchType, bool ascending){
+            return Ok(await _addressService.GetAddressesSorted(searchType, ascending));
+        }
+
         [HttpGet("{id}/GetSingleAddress")]
         public async Task<ActionResult<ServiceResponse<GetAddressDto>>> GetSingleAddress(int id){
             return Ok(await _addressService.GetAddress(id));
