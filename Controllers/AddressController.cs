@@ -25,7 +25,12 @@ namespace SolicitatieOpdracht.Controllers
             return Ok(await _addressService.GetAddresses());
         }
 
-        [HttpGet("{id}GetSingleAddress")]
+        [HttpGet("{searchOption}/GetSpecificAddress")]
+        public async Task<ActionResult<ServiceResponse<List<GetAddressDto>>>> GetAddresses(string searchOption){
+            return Ok(await _addressService.GetAddresses(searchOption));
+        }
+
+        [HttpGet("{id}/GetSingleAddress")]
         public async Task<ActionResult<ServiceResponse<GetAddressDto>>> GetSingleAddress(int id){
             return Ok(await _addressService.GetAddress(id));
         }

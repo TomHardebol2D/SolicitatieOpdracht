@@ -10,6 +10,7 @@ namespace SolicitatieOpdracht.Services.Address
     public interface IAddressService
     {
         Task<ServiceResponse<List<GetAddressDto>>> GetAddresses();
+        Task<ServiceResponse<List<GetAddressDto>>> GetAddresses(string searchOption);
         Task<ServiceResponse<GetAddressDto>> GetAddress(int id);
         Task<ServiceResponse<GetAddressDto>> AddAddress(AddAddressDto address);
         Task<ServiceResponse<GetAddressDto>> UpdateAddress(UpdateAddressDto updateAddress);

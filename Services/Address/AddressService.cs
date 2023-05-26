@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -59,10 +60,16 @@ namespace SolicitatieOpdracht.Services.Address
         }
 
         private static bool IsValidAddress(AddAddressDto address){
-            if (address.StreetName == "" || address.HouseNumber == 0 || address.PostalCode == "" || address.Place == "" || address.Country == "")
-            {
-                return false;
+            var properties = address.GetType().GetProperties();
+
+            foreach (var property in properties){
+                var propertyValue = property.GetValue(address)?.ToString();
+
+                if (propertyValue == "" || propertyValue == "string" || propertyValue == "0"){
+                    return false;
+                }
             }
+            
             return true;
         }
 
@@ -110,12 +117,40 @@ namespace SolicitatieOpdracht.Services.Address
                 _context.addresses.Remove(address);
                 await _context.SaveChangesAsync();
                 
-                serviceResponse.Data = _context.addresses.Select(a => _mapper.Map<GetAddressDto>(a)).ToList();
+                serviceResponse.Data = await _context.addresses.Select(a => _mapper.Map<GetAddressDto>(a)).ToListAsync();
             }
             catch (Exception ex){
                 serviceResponse.Success = false;
                 serviceResponse.Message = ex.Message;
             }
+            return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<List<GetAddressDto>>> GetAddresses(string searchOption)
+        {
+            var serviceResponse = new ServiceResponse<List<GetAddressDto>>();
+            serviceResponse.Data = new List<GetAddressDto>();
+            try{
+                var addresses = await _context.addresses.Select(a => _mapper.Map<GetAddressDto>(a)).ToListAsync();
+                foreach (var address in addresses){
+                    var properties = address.GetType().GetProperties();
+
+                    foreach (var property in properties){
+                        var propertyValue = property.GetValue(address)?.ToString();
+
+                        if (!string.IsNullOrEmpty(propertyValue) && propertyValue.Equals(searchOption)){
+                            serviceResponse.Data.Add(address);
+                            continue;
+                        }
+                    }
+                }
+
+            }
+            catch (Exception ex){
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+
             return serviceResponse;
         }
     }
