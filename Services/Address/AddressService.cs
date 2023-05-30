@@ -10,15 +10,23 @@ using SolicitatieOpdracht.Dtos;
 using SolicitatieOpdracht.Models;
 using System.Linq.Dynamic.Core;
 
+using System.Device.Location;
+using System.Text.Json;
+
 namespace SolicitatieOpdracht.Services.Address
 {
     public class AddressService : IAddressService
     {
         private readonly IMapper _mapper;
         private readonly DataContext _context;
+        static HttpClient client = new HttpClient();
+        string api_key;
         public AddressService(IMapper mapper, DataContext context){
             _mapper = mapper;
             _context = context;
+
+            IConfiguration configuration = new ConfigurationBuilder().AddJsonFile("appsettings.Development.json").Build();
+            api_key = configuration["APIKeyPositionStack"]!;
         }
 
         public async Task<ServiceResponse<List<GetAddressDto>>> GetAddresses(){
@@ -127,8 +135,7 @@ namespace SolicitatieOpdracht.Services.Address
             return serviceResponse;
         }
 
-        public async Task<ServiceResponse<List<GetAddressDto>>> GetAddresses(string searchOption)
-        {
+        public async Task<ServiceResponse<List<GetAddressDto>>> GetAddresses(string searchOption){
             var serviceResponse = new ServiceResponse<List<GetAddressDto>>();
             serviceResponse.Data = new List<GetAddressDto>();
             try{
@@ -155,8 +162,7 @@ namespace SolicitatieOpdracht.Services.Address
             return serviceResponse;
         }
 
-        public async Task<ServiceResponse<List<GetAddressDto>>> GetAddressesSorted(string sortType, bool ascending)
-        {
+        public async Task<ServiceResponse<List<GetAddressDto>>> GetAddressesSorted(string sortType, bool ascending){
             var serviceResponse = new ServiceResponse<List<GetAddressDto>>();
 
             try{
@@ -175,6 +181,64 @@ namespace SolicitatieOpdracht.Services.Address
             }
             
             return serviceResponse;
+        }
+
+        public async Task<ServiceResponse<float>> GetDistanceBetweenTwoAddresses(int addressId1, int addressId2){
+            var serviceResponse = new ServiceResponse<float>();
+
+            try{
+                var data1 = await _context.addresses.FirstOrDefaultAsync(a => a.Id == addressId1);
+                var data2 = await _context.addresses.FirstOrDefaultAsync(a => a.Id == addressId2);
+
+                if (data1 is null || data2 is null){
+                    throw new Exception("Could not find addresses in database");
+                }
+
+                
+                string address1 = $"{data1.HouseNumber} {data1.StreetName}, {data1.Place}";
+                string address2 = $"{data2.HouseNumber} {data2.StreetName}, {data2.Place}";
+                
+                HttpResponseMessage responseAddress1 = await client.GetAsync($"http://api.positionstack.com/v1/forward?access_key={api_key}&query={address1}");
+                HttpResponseMessage responseAddress2 = await client.GetAsync($"http://api.positionstack.com/v1/forward?access_key={api_key}&query={address2}");
+
+                if (responseAddress1 is null || responseAddress2 is null){
+                    throw new Exception("Could not find address in positionstack");
+                }
+
+                var jsonAddress1 = JsonDocument.Parse(responseAddress1.Content.ReadAsStringAsync().Result);
+                var jsonAddress2 = JsonDocument.Parse(responseAddress2.Content.ReadAsStringAsync().Result);
+
+                if (jsonAddress1 is null || jsonAddress2 is null){
+                    throw new Exception("Could not convert api response to json");
+                }
+
+                var lat1 = jsonAddress1.RootElement.GetProperty("data")[0].GetProperty("latitude").GetDouble();
+                var lon1 = jsonAddress1.RootElement.GetProperty("data")[0].GetProperty("longitude").GetDouble();
+
+                var lat2 = jsonAddress2.RootElement.GetProperty("data")[0].GetProperty("latitude").GetDouble();
+                var lon2 = jsonAddress2.RootElement.GetProperty("data")[0].GetProperty("longitude").GetDouble();
+
+                var distance = this.distanceBetweenTwoCoordinates(lat1, lat2, lon1, lon2);
+                distance = (double.Round(distance / 1000, 1));
+
+                serviceResponse.Message = "Distance in kilometers";
+                serviceResponse.Data = (float)distance;
+            }
+            catch(Exception ex){
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+
+            return serviceResponse;
+
+            throw new NotImplementedException();
+        }
+
+        private double distanceBetweenTwoCoordinates(double lat1, double lat2, double lon1, double lon2){
+            var coord1 = new GeoCoordinate(lat1, lon1); 
+            var coord2 = new GeoCoordinate(lat2, lon2); 
+
+            return coord1.GetDistanceTo(coord2);
         }
     }
 }

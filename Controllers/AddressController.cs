@@ -15,8 +15,7 @@ namespace SolicitatieOpdracht.Controllers
     public class AddressController : ControllerBase
     {
         private readonly IAddressService _addressService;
-        public AddressController(IAddressService addressService)
-        {
+        public AddressController(IAddressService addressService){
             this._addressService = addressService;
         }
 
@@ -53,6 +52,11 @@ namespace SolicitatieOpdracht.Controllers
         [HttpDelete("{id}DeleteAddress")]
         public async Task<ActionResult<ServiceResponse<List<GetAddressDto>>>> DeleteAddress(int id){
             return Ok(await _addressService.DeleteAddress(id));
+        }
+
+        [HttpGet("{addressId1}/{addressId2}GetDistanceBetweenTwoAddresses")]
+        public async Task<ActionResult<ServiceResponse<float>>> GetDistanceBetweenTwoAddresses(int addressId1, int addressId2){
+            return Ok(await _addressService.GetDistanceBetweenTwoAddresses(addressId1, addressId2));
         }
     }
 }

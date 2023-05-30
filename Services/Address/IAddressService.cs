@@ -16,5 +16,6 @@ namespace SolicitatieOpdracht.Services.Address
         Task<ServiceResponse<GetAddressDto>> UpdateAddress(UpdateAddressDto updateAddress);
         Task<ServiceResponse<List<GetAddressDto>>> DeleteAddress(int id);
         Task<ServiceResponse<List<GetAddressDto>>> GetAddressesSorted(string searchType, bool ascending);
+        Task<ServiceResponse<float>> GetDistanceBetweenTwoAddresses(int addressId1, int addressId2);
     }
 }
