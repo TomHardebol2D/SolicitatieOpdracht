@@ -10,7 +10,6 @@ using SolicitatieOpdracht.Dtos;
 using SolicitatieOpdracht.Models;
 using System.Linq.Dynamic.Core;
 
-
 namespace SolicitatieOpdracht.Services.Address
 {
     public class AddressService : IAddressService
@@ -155,7 +154,6 @@ namespace SolicitatieOpdracht.Services.Address
 
             return serviceResponse;
         }
-
 
         public async Task<ServiceResponse<List<GetAddressDto>>> GetAddressesSorted(string sortType, bool ascending)
         {
